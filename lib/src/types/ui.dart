@@ -21,6 +21,36 @@ enum MapType {
   bus,
 }
 
+/// 定位蓝点展现模式
+enum MyLocationStyle {
+  /// 只定位一次
+  show,
+
+  /// 定位一次，且将视角移动到地图中心点
+  locate,
+
+  /// 连续定位、且将视角移动到地图中心点，定位蓝点跟随设备移动
+  follow,
+
+  /// 连续定位、且将视角移动到地图中心点，地图依照设备方向旋转，定位点会跟随设备移动
+  mapRotate,
+
+  /// 连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动
+  locationRotate,
+
+  /// 连续定位、蓝点不会移动到地图中心点，定位点依照设备方向旋转，并且蓝点会跟随设备移动
+  /// 从5.1.0版本开始支持
+  locationRotateNoCenter,
+
+  /// 连续定位、蓝点不会移动到地图中心点，并且蓝点会跟随设备移动
+  /// 从5.1.0版本开始支持
+  followNoCenter,
+
+  /// 连续定位、蓝点不会移动到地图中心点，地图依照设备方向旋转，并且蓝点会跟随设备移动
+  /// 从5.1.0版本开始支持
+  mapRotateNoCenter,
+}
+
 // 设置摄像机的边界.
 class CameraTargetBounds {
   /// 使用指定的边界框或空值创建摄影机目标边界
@@ -113,12 +143,19 @@ class MyLocationStyleOptions {
   ///小蓝点图标
   BitmapDescriptor? icon;
 
+  /// 定位蓝点展现模式
+  MyLocationStyle? trackingMode;
+
+  int? interval;
+
   MyLocationStyleOptions(
     this.enabled, {
     this.circleFillColor,
     this.circleStrokeColor,
     this.circleStrokeWidth,
     this.icon,
+    this.trackingMode,
+    this.interval,
   });
 
   MyLocationStyleOptions clone() {
@@ -128,6 +165,8 @@ class MyLocationStyleOptions {
       circleStrokeColor: circleStrokeColor,
       circleStrokeWidth: circleStrokeWidth,
       icon: icon,
+      trackingMode: trackingMode,
+      interval: interval,
     );
   }
 
@@ -141,6 +180,8 @@ class MyLocationStyleOptions {
       circleStrokeColor: json['circleStrokeColor'] ?? null,
       circleStrokeWidth: json['circleStrokeWidth'] ?? null,
       icon: json['icon'] ?? null,
+      trackingMode: json['trackingMode'] ?? null,
+      interval: json['interval'] ?? null,
     );
   }
 
@@ -158,6 +199,8 @@ class MyLocationStyleOptions {
     addIfPresent('circleStrokeColor', circleStrokeColor?.value);
     addIfPresent('circleStrokeWidth', circleStrokeWidth);
     addIfPresent('icon', icon?.toMap());
+    addIfPresent('trackingMode', trackingMode?.index);
+    addIfPresent('interval', interval);
     return json;
   }
 
@@ -170,7 +213,9 @@ class MyLocationStyleOptions {
     return enabled == typedOther.enabled &&
         circleFillColor == typedOther.circleFillColor &&
         circleStrokeColor == typedOther.circleStrokeColor &&
-        icon == typedOther.icon;
+        icon == typedOther.icon &&
+        trackingMode == typedOther.trackingMode &&
+        interval == typedOther.interval;
   }
 
   @override
@@ -179,12 +224,14 @@ class MyLocationStyleOptions {
         'enabled: $enabled,'
         'circleFillColor: $circleFillColor,'
         'circleStrokeColor: $circleStrokeColor,'
-        'icon: $icon, }';
+        'icon: $icon,'
+        'trackingMode: $trackingMode,'
+        'interval: $interval, }';
   }
 
   @override
   int get hashCode =>
-      hashValues(enabled, circleFillColor, circleStrokeColor, icon);
+      hashValues(enabled, circleFillColor, circleStrokeColor, icon, trackingMode, interval,);
 }
 
 ///地图自定义样式

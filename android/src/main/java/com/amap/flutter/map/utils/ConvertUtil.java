@@ -297,7 +297,16 @@ public class ConvertUtil {
         return customMapStyleOptions;
     }
 
-    private static final int[] LocationTypeMap = new int[]{MyLocationStyle.LOCATION_TYPE_SHOW, MyLocationStyle.LOCATION_TYPE_FOLLOW, MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE};
+    private static final int[] LocationTypeMap = new int[]{
+        MyLocationStyle.LOCATION_TYPE_SHOW,
+        MyLocationStyle.LOCATION_TYPE_LOCATE,
+        MyLocationStyle.LOCATION_TYPE_FOLLOW,
+        MyLocationStyle.LOCATION_TYPE_MAP_ROTATE,
+        MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE,
+        MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER,
+        MyLocationStyle.LOCATION_TYPE_FOLLOW_NO_CENTER,
+        MyLocationStyle.LOCATION_TYPE_MAP_ROTATE_NO_CENTER
+    };
 
     private static MyLocationStyle toMyLocationStyle(Object o, float density) {
         final Map<?, ?> map = toMap(o);
@@ -308,13 +317,17 @@ public class ConvertUtil {
         }
         //两端差异比较大，Android端设置成跟随但是不移动到中心点模式，与iOS端兼容
         myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_FOLLOW_NO_CENTER);
-//        final Object trackingMode = map.get("trackingMode");
-//        if (null != trackingMode) {
-//            int trackingModeIndex = toInt(trackingMode);
-//            if (trackingModeIndex < LocationTypeMap.length) {
-//                myLocationStyle.myLocationType(LocationTypeMap[trackingModeIndex]);
-//            }
-//        }
+        final Object trackingMode = map.get("trackingMode");
+        if (null != trackingMode) {
+            int trackingModeIndex = toInt(trackingMode);
+            if (trackingModeIndex < LocationTypeMap.length) {
+                myLocationStyle.myLocationType(LocationTypeMap[trackingModeIndex]);
+            }
+        }
+        final Object interval = map.get("interval");
+        if (null != interval) {
+            myLocationStyle.interval(toInt(interval));
+        }
 
         final Object circleFillColorData = map.get("circleFillColor");
         if (null != circleFillColorData) {
