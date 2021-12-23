@@ -69,7 +69,7 @@ class _MapUiBodyState extends State<_MapUiBody> {
   ///自定义定位小蓝点
   MyLocationStyleOptions _myLocationStyleOptions =
       MyLocationStyleOptions(false,
-        trackingMode: MyLocationStyle.locationRotate
+        trackingMode: MyLocationStyle.locationRotateNoCenter
       );
   @override
   void initState() {

@@ -43,6 +43,7 @@ class _BodyState extends State<_Body> {
         circleFillColor: Colors.lightBlue,
         circleStrokeColor: Colors.blue,
         circleStrokeWidth: 1,
+        trackingMode: MyLocationStyle.locationRotate,
       ),
     );
     return Container(
