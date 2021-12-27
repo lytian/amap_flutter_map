@@ -9,7 +9,6 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.amap.flutter.map.utils.LogUtil;
 
-
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -26,8 +25,10 @@ public class AMapFlutterMapPlugin implements
     private FlutterPluginBinding pluginBinding;
     private Lifecycle lifecycle;
 
+    private static AMapFlutterSearch aMapFlutterSearch;
     private static final String VIEW_TYPE = "com.amap.flutter.map";
 
+    @SuppressWarnings("deprecation")
     public static void registerWith(PluginRegistry.Registrar registrar) {
         LogUtil.i(CLASS_NAME, "registerWith=====>");
 
@@ -56,6 +57,11 @@ public class AMapFlutterMapPlugin implements
                             VIEW_TYPE,
                             new AMapPlatformViewFactory(registrar.messenger(), new ProxyLifecycleProvider(activity)));
         }
+
+        if (aMapFlutterSearch == null) {
+            aMapFlutterSearch = new AMapFlutterSearch();
+            aMapFlutterSearch.setup(registrar.messenger(), registrar.activeContext());
+        }
     }
 
     public AMapFlutterMapPlugin() {
@@ -80,6 +86,11 @@ public class AMapFlutterMapPlugin implements
                                         return lifecycle;
                                     }
                                 }));
+
+        if (aMapFlutterSearch == null) {
+            aMapFlutterSearch = new AMapFlutterSearch();
+            aMapFlutterSearch.setup(binding.getBinaryMessenger(), binding.getApplicationContext());
+        }
     }
 
     @Override

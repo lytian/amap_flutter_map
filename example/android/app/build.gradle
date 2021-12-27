@@ -72,6 +72,7 @@ android {
 dependencies {
     //demo中引入高德地图SDK
     implementation 'com.amap.api:3dmap:8.1.0'
+    implementation 'com.amap.api:search:8.1.0'
 }
 
 flutter {

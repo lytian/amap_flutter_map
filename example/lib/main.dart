@@ -19,6 +19,7 @@ import 'package:amap_flutter_map_example/pages/map/multi_map.dart';
 import 'package:amap_flutter_map_example/pages/map/show_map_page.dart';
 import 'package:amap_flutter_map_example/pages/overlays/polyline_geodesic.dart';
 import 'package:amap_flutter_map_example/pages/overlays/polyline_texture.dart';
+import 'package:amap_flutter_map_example/pages/search/search_demo.dart';
 import 'package:amap_flutter_map_example/widgets/demo_group.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -56,6 +57,10 @@ final List<BasePage> _overlayPages = <BasePage>[
   PolylineGeodesicDemoPage('Polyline大地曲线', '演示大地曲线的添加'),
   PolylineTextureDemoPage('Polyline纹理线', '演示纹理线的添加'),
   PolygonDemoPage('Polygon操作', '演示Polygon的相关属性的操作'),
+];
+
+final List<BasePage> _searchPages = <BasePage>[
+  SearchDemoPage('地图搜索', '显示地图相关搜索'),
 ];
 
 final List<Permission> needPermissionList = [
@@ -118,6 +123,10 @@ class DemoWidget extends State<AMapDemo> {
                 DemoGroupWidget(
                   groupLabel: '绘制线和面',
                   itemPages: _overlayPages,
+                ),
+                DemoGroupWidget(
+                  groupLabel: '地图搜索',
+                  itemPages: _searchPages,
                 ),
               ],
             ),
