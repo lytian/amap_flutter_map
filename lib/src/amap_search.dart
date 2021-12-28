@@ -43,7 +43,7 @@ class AMapSearch {
   /// [city] 查询城市。可填城市编码、城市名称<br>
   /// [pageNum] 第几页<br>
   /// [pageSize] 数据条数<br>
-  static Future<List<AMapPoiResult>> searchByKeyword({
+  static Future<List<PoiResult>> searchByKeyword({
     required String keyword,
     String? type,
     String? city,
@@ -58,7 +58,7 @@ class AMapSearch {
       "pageSize": pageSize,
     });
     if (r != null) {
-      return (r as List).map((e) => AMapPoiResult.fromJson(e)).toList();
+      return (r as List).map((e) => PoiResult.fromJson(e)).toList();
     }
     return [];
   }
@@ -71,7 +71,7 @@ class AMapSearch {
   /// [city] 查询城市。可填城市编码、城市名称<br>
   /// [pageNum] 第几页<br>
   /// [pageSize] 数据条数<br>
-  static Future<List<AMapPoiResult>> searchByAround({
+  static Future<List<PoiResult>> searchByAround({
     required LatLng? location,
     int? radius = 3000,
     String? keyword,
@@ -90,7 +90,7 @@ class AMapSearch {
       "radius": radius,
     });
     if (r != null) {
-      return (r as List).map((e) => AMapPoiResult.fromJson(e)).toList();
+      return (r as List).map((e) => PoiResult.fromJson(e)).toList();
     }
     return [];
   }
@@ -102,7 +102,7 @@ class AMapSearch {
   /// [city] 查询城市。可填城市编码、城市名称<br>
   /// [pageNum] 第几页<br>
   /// [pageSize] 数据条数<br>
-  static Future<List<AMapPoiResult>> searchByPolygon({
+  static Future<List<PoiResult>> searchByPolygon({
     required List<LatLng>? polygon,
     String? keyword,
     String? type,
@@ -119,9 +119,43 @@ class AMapSearch {
       "polygon": polygon?.map((e) => e.toJson()).toList(),
     });
     if (r != null) {
-      return (r as List).map((e) => AMapPoiResult.fromJson(e)).toList();
+      return (r as List).map((e) => PoiResult.fromJson(e)).toList();
     }
     return [];
+  }
+
+  /// 地址编码<br>
+  /// [address] 地址<br>
+  /// [city] 查询城市。可填城市编码、城市名称<br>
+  static Future<List<GeocodeAddress>> geocodeQuery({
+    required String address,
+    String? city,
+  }) async {
+    final r = await _methodChannel.invokeMethod('geocodeQuery', {
+      "address": address,
+      "city": city,
+    });
+    if (r != null) {
+      return (r as List).map((e) => GeocodeAddress.fromJson(e)).toList();
+    }
+    return [];
+  }
+  
+  /// 逆地址编码<br>
+  /// [location] 经纬度<br>
+  /// [radius] 搜索半径。取值范围:0-50000，大于50000时按默认值，单位：米<br>
+  /// [mapType] GPS类型<br>
+  static Future<RegeocodeAddress> regeocodeQuery({
+    required LatLng location,
+    int? radius = 1000,
+    MapGPSType? gpsType,
+  }) async {
+    final r = await _methodChannel.invokeMethod('regeocodeQuery', {
+      "location": location.toJson(),
+      "radius": radius,
+      "gpsType": gpsType == MapGPSType.GPS ? 'gps' : 'autonavi',
+    });
+    return RegeocodeAddress.fromJson(r);
   }
 
 }

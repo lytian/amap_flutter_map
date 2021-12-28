@@ -8,6 +8,13 @@ import com.amap.api.maps.MapsInitializer;
 import com.amap.api.services.core.AMapException;
 import com.amap.api.services.core.LatLonPoint;
 import com.amap.api.services.core.PoiItem;
+import com.amap.api.services.geocoder.GeocodeAddress;
+import com.amap.api.services.geocoder.GeocodeQuery;
+import com.amap.api.services.geocoder.GeocodeResult;
+import com.amap.api.services.geocoder.GeocodeSearch;
+import com.amap.api.services.geocoder.RegeocodeAddress;
+import com.amap.api.services.geocoder.RegeocodeQuery;
+import com.amap.api.services.geocoder.RegeocodeResult;
 import com.amap.api.services.poisearch.Photo;
 import com.amap.api.services.poisearch.PoiResult;
 import com.amap.api.services.poisearch.PoiSearch;
@@ -87,6 +94,22 @@ public class AMapFlutterSearch implements FlutterPlugin, MethodChannel.MethodCal
                     result.error(e.getErrorType(), e.getMessage(), "");
                 }
                 break;
+            case "geocodeQuery":
+                try {
+                    geocodeQuery((Map) call.arguments);
+                } catch (AMapException e) {
+                    e.printStackTrace();
+                    result.error(e.getErrorType(), e.getMessage(), "");
+                }
+                break;
+            case "regeocodeQuery":
+                try {
+                    regeocodeQuery((Map) call.arguments);
+                } catch (AMapException e) {
+                    e.printStackTrace();
+                    result.error(e.getErrorType(), e.getMessage(), "");
+                }
+                break;
             default:
                 result.notImplemented();
                 break;
@@ -133,85 +156,160 @@ public class AMapFlutterSearch implements FlutterPlugin, MethodChannel.MethodCal
             }
             poiSearch.setBound(new PoiSearch.SearchBound(pointList));
         }
-        poiSearch.setOnPoiSearchListener(onPoiSearchListener);
+        poiSearch.setOnPoiSearchListener(new PoiSearch.OnPoiSearchListener() {
+            @Override
+            public void onPoiSearched(PoiResult poiResult, int rCode) {
+                if (rCode != 1000) {
+                    result.error(rCode + "", "poi搜索失败", "");
+                    return;
+                }
+                List<PoiItem> pois = poiResult.getPois();
+                List<Map<String, Object>> arr = new ArrayList<>();
+                Map<String, Object> map;
+                for (PoiItem poi: pois) {
+                    map = new HashMap<>();
+                    map.put("poiId", poi.getPoiId());
+                    map.put("title", poi.getTitle());
+                    map.put("snippet", poi.getSnippet());
+                    map.put("postcode", poi.getPostcode());
+                    map.put("provinceCode", poi.getProvinceCode());
+                    map.put("provinceName", poi.getProvinceName());
+                    map.put("cityCode", poi.getCityCode());
+                    map.put("cityName", poi.getCityName());
+                    map.put("adCode", poi.getAdCode());
+                    map.put("adName", poi.getAdName());
+                    map.put("typeCode", poi.getTypeCode());
+                    map.put("typeDes", poi.getTypeDes());
+                    map.put("parkingType", poi.getParkingType());
+                    map.put("businessArea", poi.getBusinessArea());
+                    map.put("direction", poi.getDirection());
+                    map.put("distance", poi.getDistance());
+                    map.put("email", poi.getEmail());
+                    map.put("tel", poi.getTel());
+                    map.put("website", poi.getWebsite());
+                    map.put("isIndoorMap", poi.isIndoorMap());
+                    // 经纬度
+                    map.put("latLonPoint", new double[]{ poi.getLatLonPoint().getLatitude(), poi.getLatLonPoint().getLongitude()} );
+                    if (poi.getEnter() != null) {
+                        map.put("latLonPoint", new double[]{ poi.getEnter().getLatitude(), poi.getEnter().getLongitude()} );
+                    }
+                    if (poi.getExit() != null) {
+                        map.put("latLonPoint", new double[]{ poi.getExit().getLatitude(), poi.getExit().getLongitude()} );
+                    }
+                    // 图片
+                    if (poi.getPhotos() != null && !poi.getPhotos().isEmpty()) {
+                        List<Map<String, String>> photos = new ArrayList<>();
+                        for (Photo p: poi.getPhotos()) {
+                            Map<String, String> photo = new HashMap<>();
+                            photo.put("title", p.getTitle());
+                            photo.put("url", p.getUrl());
+                            photos.add(photo);
+                        }
+                        map.put("photos", photos);
+                    }
+                    // 子POI信息
+                    if (poi.getSubPois() != null && !poi.getSubPois().isEmpty()) {
+                        List<Map<String, Object>> subPois = new ArrayList<>();
+                        for (SubPoiItem item: poi.getSubPois()) {
+                            Map<String, Object> subPoi = new HashMap<>();
+                            subPoi.put("poiId", item.getPoiId());
+                            subPoi.put("title", item.getTitle());
+                            subPoi.put("subTypeDes", item.getSubTypeDes());
+                            subPoi.put("subName", item.getSubName());
+                            subPoi.put("snippet", item.getSnippet());
+                            subPoi.put("distance", item.getDistance());
+                            subPoi.put("latLon", new double[] { item.getLatLonPoint().getLatitude(), item.getLatLonPoint().getLongitude() });
+                            subPois.add(subPoi);
+                        }
+                        map.put("subPois", subPois);
+                    }
+                    arr.add(map);
+                }
+                result.success(arr);
+            }
+
+            @Override
+            public void onPoiItemSearched(PoiItem poiItem, int i) {
+
+            }
+        });
         poiSearch.searchPOIAsyn();
     }
 
-    final PoiSearch.OnPoiSearchListener onPoiSearchListener = new PoiSearch.OnPoiSearchListener() {
+    private void geocodeQuery(Map<String, Object> params) throws AMapException {
+        GeocodeSearch geocoderSearch = new GeocodeSearch(context);
+        geocoderSearch.setOnGeocodeSearchListener(geocodeSearchListener);
+        GeocodeQuery query = new GeocodeQuery((String) params.get("address"), (String) params.get("city"));
+        geocoderSearch.getFromLocationNameAsyn(query);
+    }
+
+    private void regeocodeQuery(Map<String, Object> params) throws AMapException {
+        GeocodeSearch geocoderSearch = new GeocodeSearch(context);
+        geocoderSearch.setOnGeocodeSearchListener(geocodeSearchListener);
+        List<Double> location = (List<Double>) params.get("location");
+        String mapType = GeocodeSearch.AMAP;
+        if (params.get("mapType") == "gps") {
+            mapType = GeocodeSearch.GPS;
+        }
+        RegeocodeQuery query = new RegeocodeQuery(
+            new LatLonPoint(location.get(0), location.get(1)),
+            params.get("radius") == null ? 1000 : (int) params.get("radius"),
+            mapType
+        );
+        geocoderSearch.getFromLocationAsyn(query);
+    }
+
+    final GeocodeSearch.OnGeocodeSearchListener geocodeSearchListener = new GeocodeSearch.OnGeocodeSearchListener() {
         @Override
-        public void onPoiSearched(PoiResult poiResult, int i) {
-            if (poiResult == null) {
-                result.success(new ArrayList<>());
+        public void onRegeocodeSearched(RegeocodeResult regeocodeResult, int rCode) {
+            if (rCode != 1000) {
+                result.error(rCode + "", "逆地址编码失败", "");
                 return;
             }
-            List<PoiItem> pois = poiResult.getPois();
-            List<Map<String, Object>> arr = new ArrayList<>();
-            Map<String, Object> map;
-            for (PoiItem poi: pois) {
-                map = new HashMap<>();
-                map.put("poiId", poi.getPoiId());
-                map.put("title", poi.getTitle());
-                map.put("snippet", poi.getSnippet());
-                map.put("postcode", poi.getPostcode());
-                map.put("provinceCode", poi.getProvinceCode());
-                map.put("provinceName", poi.getProvinceName());
-                map.put("cityCode", poi.getCityCode());
-                map.put("cityName", poi.getCityName());
-                map.put("adCode", poi.getAdCode());
-                map.put("adName", poi.getAdName());
-                map.put("typeCode", poi.getTypeCode());
-                map.put("typeDes", poi.getTypeDes());
-                map.put("parkingType", poi.getParkingType());
-                map.put("businessArea", poi.getBusinessArea());
-                map.put("direction", poi.getDirection());
-                map.put("distance", poi.getDistance());
-                map.put("email", poi.getEmail());
-                map.put("tel", poi.getTel());
-                map.put("website", poi.getWebsite());
-                map.put("isIndoorMap", poi.isIndoorMap());
-                // 经纬度
-                map.put("latLonPoint", new double[]{ poi.getLatLonPoint().getLatitude(), poi.getLatLonPoint().getLongitude()} );
-                if (poi.getEnter() != null) {
-                    map.put("latLonPoint", new double[]{ poi.getEnter().getLatitude(), poi.getEnter().getLongitude()} );
-                }
-                if (poi.getExit() != null) {
-                    map.put("latLonPoint", new double[]{ poi.getExit().getLatitude(), poi.getExit().getLongitude()} );
-                }
-                // 图片
-                if (poi.getPhotos() != null && !poi.getPhotos().isEmpty()) {
-                    List<Map<String, String>> photos = new ArrayList<>();
-                    for (Photo p: poi.getPhotos()) {
-                        Map<String, String> photo = new HashMap<>();
-                        photo.put("title", p.getTitle());
-                        photo.put("url", p.getUrl());
-                        photos.add(photo);
-                    }
-                    map.put("photos", photos);
-                }
-                // 子POI信息
-                if (poi.getSubPois() != null && !poi.getSubPois().isEmpty()) {
-                    List<Map<String, Object>> subPois = new ArrayList<>();
-                    for (SubPoiItem item: poi.getSubPois()) {
-                        Map<String, Object> subPoi = new HashMap<>();
-                        subPoi.put("poiId", item.getPoiId());
-                        subPoi.put("title", item.getTitle());
-                        subPoi.put("subTypeDes", item.getSubTypeDes());
-                        subPoi.put("subName", item.getSubName());
-                        subPoi.put("snippet", item.getSnippet());
-                        subPoi.put("distance", item.getDistance());
-                        subPoi.put("latLon", new double[] { item.getLatLonPoint().getLatitude(), item.getLatLonPoint().getLongitude() });
-                        subPois.add(subPoi);
-                    }
-                    map.put("subPois", subPois);
-                }
-                arr.add(map);
-            }
-            result.success(arr);
+            RegeocodeAddress regeo = regeocodeResult.getRegeocodeAddress();
+            Map<String, Object> args = new HashMap<>();
+            args.put("formattedAddress", regeo.getFormatAddress());
+            args.put("country", regeo.getCountry());
+            args.put("countryCode", regeo.getCountryCode());
+            args.put("province", regeo.getProvince());
+            args.put("city", regeo.getCity());
+            args.put("cityCode", regeo.getCityCode());
+            args.put("district", regeo.getDistrict());
+            args.put("adCode", regeo.getAdCode());
+            args.put("township", regeo.getTownship());
+            args.put("towncode", regeo.getTowncode());
+            args.put("neighborhood", regeo.getNeighborhood());
+            args.put("building", regeo.getBuilding());
+            result.success(args);
         }
 
         @Override
-        public void onPoiItemSearched(PoiItem poiItem, int i) {
-
+        public void onGeocodeSearched(GeocodeResult geocodeResult, int rCode) {
+            if (rCode != 1000) {
+                result.error(rCode + "", "地址编码失败", "");
+                return;
+            }
+            List<GeocodeAddress> addressList = geocodeResult.getGeocodeAddressList();
+            List<Map<String, Object>> arr = new ArrayList<>();
+            Map<String, Object> map;
+            for (GeocodeAddress geo: addressList) {
+                map = new HashMap<>();
+                map.put("formattedAddress", geo.getFormatAddress());
+                map.put("country", geo.getCountry());
+                map.put("province", geo.getProvince());
+                map.put("city", geo.getCity());
+                map.put("district", geo.getDistrict());
+                map.put("building", geo.getBuilding());
+                map.put("neighborhood", geo.getNeighborhood());
+                map.put("township", geo.getTownship());
+                map.put("adcode", geo.getAdcode());
+                map.put("postcode", geo.getPostcode());
+                // 经纬度
+                map.put("location", new double[]{ geo.getLatLonPoint().getLatitude(), geo.getLatLonPoint().getLongitude()} );
+                map.put("level", geo.getLevel());
+                arr.add(map);
+            }
+            result.success(arr);
         }
     };
 }

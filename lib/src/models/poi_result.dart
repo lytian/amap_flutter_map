@@ -1,7 +1,7 @@
 import 'package:amap_flutter_base/amap_flutter_base.dart';
 
-class AMapPoiResult {
-  AMapPoiResult({
+class PoiResult {
+  PoiResult({
       this.poiId, 
       this.title, 
       this.snippet, 
@@ -28,7 +28,7 @@ class AMapPoiResult {
       this.photos, 
       this.subPois,});
 
-  AMapPoiResult.fromJson(dynamic json) {
+  PoiResult.fromJson(dynamic json) {
     poiId = json['poiId'];
     title = json['title'];
     snippet = json['snippet'];

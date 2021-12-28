@@ -5,23 +5,23 @@ import 'package:amap_flutter_base/amap_flutter_base.dart';
 import 'package:amap_flutter_map_example/base_page.dart';
 import 'package:flutter/material.dart';
 
-class SearchDemoPage extends BasePage {
-  SearchDemoPage(String title, String subTitle) : super(title, subTitle);
+class GeoQueryPage extends BasePage {
+  GeoQueryPage(String title, String subTitle) : super(title, subTitle);
 
   @override
   Widget build(BuildContext context) {
-    return _SearchDemo();
+    return _GeoQuery();
   }
 }
 
-class _SearchDemo extends StatefulWidget {
-  const _SearchDemo({Key? key}) : super(key: key);
+class _GeoQuery extends StatefulWidget {
+  const _GeoQuery({Key? key}) : super(key: key);
 
   @override
-  _SearchDemoState createState() => _SearchDemoState();
+  _GeoQueryState createState() => _GeoQueryState();
 }
 
-class _SearchDemoState extends State<_SearchDemo> {
+class _GeoQueryState extends State<_GeoQuery> {
   String? _result;
 
   @override
@@ -57,44 +57,26 @@ class _SearchDemoState extends State<_SearchDemo> {
           const Spacer(),
           ElevatedButton(
             onPressed: () async {
-              final List<PoiResult> r = await AMapSearch.searchByKeyword(
-                  keyword: '肯德基',
+              final List<GeocodeAddress> r = await AMapSearch.geocodeQuery(
+                  address: '长岭北路贵阳农商银行大厦',
                   city: '贵阳市',
               );
               setState(() {
                 _result = json.encode(r.map((e) => e.toJson()).toList());
               });
             },
-            child: Text('关键字搜索'),
+            child: Text('地址编码'),
           ),
           ElevatedButton(
             onPressed: () async {
-              final List<PoiResult> r = await AMapSearch.searchByAround(
+              final RegeocodeAddress r = await AMapSearch.regeocodeQuery(
                 location: LatLng(26.647699, 106.650116),
-                radius: 1000,
               );
               setState(() {
-                _result = json.encode(r.map((e) => e.toJson()).toList());
+                _result = r.formattedAddress;
               });
             },
-            child: Text('周边搜索'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final r = await AMapSearch.searchByPolygon(
-                polygon: [
-                  LatLng(26.654182, 106.657047),
-                  LatLng(26.652878, 106.624303),
-                  LatLng(26.6271, 106.629624),
-                  LatLng(26.628404, 106.676917),
-                ],
-                keyword: '停车场',
-              );
-              setState(() {
-                _result = json.encode(r.map((e) => e.toJson()).toList());
-              });
-            },
-            child: Text('多边形搜索'),
+            child: Text('逆地址编码'),
           ),
         ],
       ),
