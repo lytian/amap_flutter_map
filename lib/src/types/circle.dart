@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart' show Color;
 import 'package:amap_flutter_base/amap_flutter_base.dart';
 import 'base_overlay.dart';
@@ -19,7 +18,7 @@ class Circle extends BaseOverlay {
       this.strokeColor = const Color(0xCC00BFFF),
       this.fillColor = const Color(0xC487CEFA),
       this.visible = true,
-      this.zIndex,})
+      this.zIndex = 0.0,})
       : this.radius = (radius < 0 ? 0 : radius),
         this.strokeWidth = (strokeWidth <= 0 ? 10 : strokeWidth),
         super();
@@ -46,7 +45,7 @@ class Circle extends BaseOverlay {
   final bool visible;
 
   /// 圆的Z轴数值
-  final int? zIndex;
+  final double zIndex;
 
   /// 实际copy函数
   Circle copyWith({
@@ -57,7 +56,7 @@ class Circle extends BaseOverlay {
     Color? strokeColorParam,
     Color? fillColorParam,
     bool? visibleParam,
-    int? zIndexParam,
+    double? zIndexParam,
   }) {
     Circle copyCircle = Circle(
       center: centerParam ?? center,
@@ -67,7 +66,7 @@ class Circle extends BaseOverlay {
       strokeColor: strokeColorParam ?? strokeColor,
       fillColor: fillColorParam ?? fillColor,
       visible: visibleParam ?? visible,
-      zIndex: zIndex,
+      zIndex: zIndexParam ?? zIndex,
     );
     copyCircle.setIdForCopy(id);
     return copyCircle;

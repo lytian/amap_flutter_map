@@ -29,6 +29,7 @@ class _State extends State<_Body> {
 
 // Values when toggling Circle color
   int colorsIndex = 0;
+  double zIndex = 1;
   List<Color> colors = <Color>[
     Colors.purple,
     Colors.red,
@@ -135,9 +136,9 @@ class _State extends State<_Body> {
   void _changeZIndex() {
     final Circle? selectedCircle = _circles[selectedCircleId];
     if(selectedCircle != null) {
-      int? currentZIndex = selectedCircle.zIndex;
-      if (currentZIndex == null || currentZIndex <= 0) {
-        currentZIndex = 99;
+      double currentZIndex = selectedCircle.zIndex;
+      if (currentZIndex <= 0) {
+        currentZIndex = ++zIndex;
       } else {
         currentZIndex = 0;
       }
@@ -197,6 +198,23 @@ class _State extends State<_Body> {
   }
 
   void _onMapTap(LatLng location) {
+    _circles..forEach((id, circle) {
+      double radius = circle.radius;
+      if (AMapTools.distanceBetween(location, circle.center) < radius) {
+        if (selectedCircleId != id) {
+          ++zIndex;
+        }
+        selectedCircleId = id;
+        //有选中的Circle
+        final Circle? selectedCircle = _circles[selectedCircleId];
+        setState(() {
+          _circles[selectedCircleId!] =
+              selectedCircle!.copyWith(zIndexParam: zIndex);
+        });
+        print(zIndex);
+        return;
+      }
+    });
   }
 
   @override
